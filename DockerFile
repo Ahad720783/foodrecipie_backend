@@ -1,23 +1,13 @@
-# -------- Stage 1: Build the JAR --------
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+# Stage 1: Build the application
+FROM maven:3.9.0-eclipse-temurin-17 AS build
 WORKDIR /app
-
-# Copy entire project
-COPY . .
-
-# Build using Maven (skip tests to speed up)
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-
-# -------- Stage 2: Run the JAR --------
-FROM eclipse-temurin:17-jdk-alpine
+# Stage 2: Run the jar
+FROM eclipse-temurin:17-jre
 WORKDIR /app
-
-# Copy JAR from builder stage
 COPY --from=build /app/target/*.jar app.jar
-
-# Expose Spring Boot port
-EXPOSE 5432
-
-# Start the application
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
